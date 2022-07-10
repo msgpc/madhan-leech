@@ -4,10 +4,10 @@ from subprocess import run as srun, check_output
 from psutil import disk_usage, cpu_percent, swap_memory, cpu_count, virtual_memory, net_io_counters, boot_time
 from time import time
 from sys import executable
-from telegram import InlineKeyboardMarkup
+from telegram import ParseMode, InlineKeyboardMarkup
 from telegram.ext import CommandHandler
 
-from bot import bot, dispatcher, updater, botStartTime, IGNORE_PENDING_REQUESTS, LOGGER, Interval, INCOMPLETE_TASK_NOTIFIER, DB_URI, alive, app, main_loop, HEROKU_API_KEY, HEROKU_APP_NAME
+from bot import bot, IMAGE_URL, dispatcher, updater, botStartTime, IGNORE_PENDING_REQUESTS, LOGGER, Interval, INCOMPLETE_TASK_NOTIFIER, DB_URI, alive, app, main_loop, HEROKU_API_KEY, HEROKU_APP_NAME
 from .helper.ext_utils.fs_utils import start_cleanup, clean_all, exit_clean_up
 from .helper.ext_utils.telegraph_helper import telegraph
 from .helper.ext_utils.bot_utils import get_readable_file_size, get_readable_time
@@ -38,27 +38,28 @@ def stats(update, context):
     mem_t = get_readable_file_size(memory.total)
     mem_a = get_readable_file_size(memory.available)
     mem_u = get_readable_file_size(memory.used)
-    stats = f'<b>Commit Date:</b> {last_commit}\n\n'\
-            f'<b>Bot Uptime:</b> {currentTime}\n\n'\
-            f'<b>Total Disk Space:</b> {total}\n'\
-            f'<b>Used:</b> {used} | <b>Free:</b> {free}\n\n'\
-            f'<b>Up:</b> {sent} | '\
-            f'<b>Down:</b> {recv}\n\n'\
-            f'<b>CPU:</b> {cpuUsage}% | '\
-            f'<b>RAM:</b> {mem_p}% | '\
-            f'<b>DISK:</b> {disk}%\n\n'\
-            f'<b>Total Memory:</b> {mem_t}\n'\
-            f'<b>Free:</b> {mem_a} | '\
-            f'<b>Used:</b> {mem_u}\n\n'
+    stats = stats = f'<b>╭──《🌐 Bᴏᴛ Sᴛᴀᴛɪsᴛɪᴄs 🌐》</b>\n' \
+            f'<b>│</b>\n' \
+            f'<b>├  ▶ Rᴜɴɴɪɴɢ Sɪɴᴄᴇ ▶ : {currentTime}</b>\n' \
+            f'<b>├  💾 Tᴏᴛᴀʟ Dɪsᴋ Sᴘᴀᴄᴇ : {total}</b>\n' \
+            f'<b>├  📀 Tᴏᴛᴀʟ Usᴇᴅ Sᴘᴀᴄᴇ : {used}</b>\n' \
+            f'<b>├  💿 Tᴏᴛᴀʟ Fʀᴇᴇ Sᴘᴀᴄᴇ : {free}</b>\n' \
+            f'<b>├  🔼 Tᴏᴛᴀʟ Uᴘʟᴏᴀᴅ : {sent}</b>\n' \
+            f'<b>├  🔽 Tᴏᴛᴀʟ Dᴏᴡɴʟᴏᴀᴅ : {recv}</b>\n' \
+            f'<b>├  🖥️ Cᴘᴜ : {cpuUsage}%</b>\n' \
+            f'<b>├  🎮 Rᴀᴍ : {mem_p}%</b>\n' \
+            f'<b>├  💽 Dɪsᴋ : {disk}%</b>\n' \
+            f'<b>│</b>\n' \
+            f'<b>╰──《 🚸 @PrimeXclouD 🚸 》</b>'
+    update.effective_message.reply_photo(IMAGE_URL, stats, parse_mode=ParseMode.HTML)
     heroku = getHerokuDetails(HEROKU_API_KEY, HEROKU_APP_NAME)
     if heroku: stats += heroku
-    sendMessage(stats, context.bot, update.message)
 
 
 def start(update, context):
     buttons = ButtonMaker()
-    buttons.buildbutton("Join The Channel", "https://t.me/PrimexCloud ")
-    buttons.buildbutton("", "https://t.me/")
+    buttons.buildbutton("𝗣𝗿𝗶𝗺𝗲𝗫𝗰𝗹𝗼𝘂𝗗", "https://t.me/PrimexCloud")
+    buttons.buildbutton("", "https://t.me/mirrorsociety")
     reply_markup = InlineKeyboardMarkup(buttons.build_menu(2))
     if CustomFilters.authorized_user(update) or CustomFilters.authorized_chat(update):
         start_string = f'''
@@ -67,7 +68,8 @@ Type /{BotCommands.HelpCommand} to get a list of available commands
 '''
         sendMarkup(start_string, context.bot, update.message, reply_markup)
     else:
-        sendMarkup('Not Authorized user, deploy your own mirror-leech bot', context.bot, update.message, reply_markup)
+        msg1 = f'<b>𝗛𝗲𝘆👋,\n\n𝗧𝗵𝗮𝗻𝗸 𝗬𝗼𝘂 𝗙𝗼𝗿 𝗦𝘂𝗯𝘀𝗰𝗿𝗶𝗯𝗶𝗻𝗴 𝗠𝗲.</b>'
+        update.effective_message.reply_photo(IMAGE_URL, msg1, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
 
 def restart(update, context):
     restart_message = sendMessage("Restarting...", context.bot, update.message)
