@@ -219,45 +219,11 @@ class MirrorListener:
             DbManger().rm_complete_task(self.message.link)
         msg = f"<b>Name: </b><code>{escape(name)}</code>\n\n<b>Size: </b>{size}"
         if self.isLeech:
-            if SOURCE_LINK is True:
-                try:
-                    source_link = message_args[1]
-                    if is_magnet(source_link):
-                        link = telegraph.create_page(
-                        title='Helios-Mirror Source Link',
-                        content=source_link,
-                    )["path"]
-                        buttons.buildbutton(f"🔗 Source Link", f"https://telegra.ph/{link}")
-                    else:
-                        buttons.buildbutton(f"🔗 Source Link", source_link)
-                except Exception as e:
-                    LOGGER.warning(e)
-                pass
-                if reply_to is not None:
-                    try:
-                        reply_text = reply_to.text
-                        if is_url(reply_text):
-                            source_link = reply_text.strip()
-                            if is_magnet(source_link):
-                                link = telegraph.create_page(
-                                    title='Helios-Mirror Source Link',
-                                    content=source_link,
-                                )["path"]
-                                buttons.buildbutton(f"🔗 Source Link", f"https://telegra.ph/{link}")
-                            else:
-                                buttons.buildbutton(f"🔗 Source Link", source_link)
-                    except Exception as e:
-                        LOGGER.warning(e)
-                        pass
-            if BOT_PM:
-                bot_d = bot.get_me()
-                b_uname = bot_d.username
-                botstart = f"http://t.me/{b_uname}"
-                buttons.buildbutton("View file in PM", f"{botstart}")
             msg += f'\n<b>Total Files: </b>{folders}'
             if typ != 0:
                 msg += f'\n<b>Corrupted Files: </b>{typ}'
-            msg += f'\n<b>cc: </b>{self.tag}\n\n'
+            msg += f'\n<b>Req By: </b>{self.tag}\n'
+            msg += f'\n<b>I have send files in PM.</b>'
             if not files:
                 uploadmsg = sendMessage(msg, self.bot, self.message)
             else:
@@ -269,7 +235,7 @@ class MirrorListener:
                         sleep(1)
                         fmsg = ''
                 if fmsg != '':
-                    uploadmsg = sendMarkup(msg + fmsg, self.bot, self.message, InlineKeyboardMarkup(buttons.build_menu(2)))
+                    uploadmsg = sendMarkup(msg, self.bot, self.message, InlineKeyboardMarkup(buttons.build_menu(2)))
                     Thread(target=auto_delete_upload_message, args=(bot, self.message, uploadmsg)).start()
         else:
             msg += f'\n\n<b>Type: </b>{typ}'
