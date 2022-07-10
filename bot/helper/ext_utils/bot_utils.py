@@ -117,10 +117,33 @@ def get_progress_bar_string(status):
     p = 0 if total == 0 else round(completed * 100 / total)
     p = min(max(p, 0), 100)
     cFull = p // 8
-    p_str = '▰' * cFull
-    p_str += '▱' * (12 - cFull)
+    p_str = '●' * cFull
+    p_str += '○' * (12 - cFull)
     p_str = f"[{p_str}]"
     return p_str
+
+def progress_bar(percentage):
+    """Returns a progress bar for download
+    """
+    #percentage is on the scale of 0-1
+    comp = '▓'
+    ncomp = '░'
+    pr = ""
+
+    if isinstance(percentage, str):
+        return "NaN"
+
+    try:
+        percentage=int(percentage)
+    except:
+        percentage = 0
+
+    for i in range(1,11):
+        if i <= int(percentage/10):
+            pr += comp
+        else:
+            pr += ncomp
+    return pr
 
 def get_readable_message():
     with download_dict_lock:
@@ -134,7 +157,7 @@ def get_readable_message():
                 globals()['PAGE_NO'] -= 1
         for index, download in enumerate(list(download_dict.values())[COUNT:], start=1):
             msg += f"<b>Name:</b> <code>{escape(str(download.name()))}</code>"
-            msg += f"\n<b>Status:</b> <i>{download.status()}</i>\n<b>Engine:</b> {download.eng()}"
+            msg += f"\n<b>Status:</b> <i>{download.status()}</i>"
             if download.status() not in [
                 MirrorStatus.STATUS_ARCHIVING,
                 MirrorStatus.STATUS_EXTRACTING,
@@ -149,8 +172,8 @@ def get_readable_message():
                 else:
                     msg += f"\n<b>Downloaded:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
                 msg += f"\n<b>Speed:</b> {download.speed()} | <b>ETA:</b> {download.eta()}"
-                msg += f"\n<b>Time Elapsed: </b>{get_readable_time(time() - download.message.date.timestamp())}"
-                msg += f"\n<b>Engine:</b> {download.eng()}"
+                msg += f"\n<b>Elapsed Time: </b>{get_readable_time(time() - download.message.date.timestamp())}"
+                msg += f"\n<b>Engine:</b> Aria2📶"
                 try:
                     msg += f"\n<b>Seeders:</b> {download.aria_download().num_seeders}" \
                            f" | <b>Peers:</b> {download.aria_download().connections}"
@@ -164,12 +187,12 @@ def get_readable_message():
                 if download.message.chat.type != 'private':
                     try:
                         chatid = str(download.message.chat.id)[4:]
-                        msg += f'\n<b>Source: </b><a href="https://t.me/c/{chatid}/{download.message.message_id}">{download.message.from_user.first_name}</a> | <b>Id :</b> <code>{download.message.from_user.id}</code>'
+                        msg += f'\n<b>Adder:</b> <a href="https://t.me/c/{chatid}/{download.message.message_id}">{download.message.from_user.first_name}</a>(<code>{download.message.from_user.id}</code>)'
                     except:
                         pass
                 else:
                     msg += f'\n<b>User:</b> ️<code>{download.message.from_user.first_name}</code> | <b>Id:</b> <code>{download.message.from_user.id}</code>'
-                msg += f"\n<b>To Stop: </b><code>/{BotCommands.CancelMirror} {download.gid()}</code>"
+                msg += f"\n<b>Cancel: </b><code>/{BotCommands.CancelMirror} {download.gid()}</code>"
             elif download.status() == MirrorStatus.STATUS_SEEDING:
                 msg += f"\n<b>Size: </b>{download.size()}"
                 msg += f"\n<b>Speed: </b>{get_readable_file_size(download.torrent_info().upspeed)}/s"
@@ -342,13 +365,18 @@ def bot_sys_stats():
        if stats.status() == MirrorStatus.STATUS_SPLITTING:
                 num_split += 1
     stats = f"""
-BOT UPTIME: {currentTime}\n
-CPU : {cpu}% || RAM : {mem_p}%\n
-USED : {used} || FREE :{free}
-SENT : {sent} || RECV : {recv}\n
-ONGOING TASKS:
-DL: {num_active} || UP : {num_upload} || SPLIT : {num_split}
-ZIP : {num_archi} || UNZIP : {num_extract} || TOTAL : {tasks} 
+BOT UPTIME⏰: {currentTime}
+
+CPU: {progress_bar(cpu)} {cpu}%
+RAM: {progress_bar(mem_p)} {mem_p}%
+DISK: {progress_bar(disk)} {disk}%
+
+TOTAL: {total}
+
+USED: {used} || FREE: {free}
+SENT: {sent} || RECV: {recv}
+
+#PrimeXclouD
 """
     return stats
 dispatcher.add_handler(
